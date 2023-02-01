@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(nonStd LANGUAGES CXX)
+project(nonStdTest LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(nonStd main.cpp)
+include_directories(
+        ${PROJECT_SOURCE_DIR}/non_std/)
+
+add_subdirectory(non_std)
+
+add_executable(nonStdTest main.cpp non_std/containers/HashTableWithRehashing.hpp)
+target_link_libraries(nonStdTest
+        non_std)

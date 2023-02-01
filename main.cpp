@@ -1,20 +1,14 @@
 #include <iostream>
-#include "FibonacciHeap.h"
+#include "containers/HashTableWithRehashing.hpp"
+#include "containers/HashMap.hpp"
 
 int main()
 {
-    non_std::fibonacci::Heap<float> heap;
+    non_std::containers::HashTableWithRehashing<uint64_t, uint64_t, 3ul> table;
+    non_std::containers::HashMap<uint64_t, uint64_t, 3ul> map;
 
-    for (int i = 0; i < 100; ++i)
-    {
-        heap.insert(i);
-        std::cout << heap.top() << std::endl;
-    }
-    for (int i = 0; i < 100; ++i)
-    {
-        std::cout << heap.top() << std::endl;
-        heap.pop();
-    }
+    *(table[1ul]) = 1;
+    *(map[1ul]) = 1;
 
     return 0;
 }

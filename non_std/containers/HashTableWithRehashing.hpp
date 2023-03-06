@@ -7,97 +7,140 @@
 namespace non_std::containers
 {
 
-/*
- * Assumptions:
- *  * Elements cannot be cleared. It is to do not consider situation when get returns empty,
- *      but elements can be find in rehashed.
- * */
 template<typename TKey,
         typename TValue,
-        unsigned int TBucketBitWidth,
-        typename Hash = std::hash<TKey>,
-        typename Rehash = std::hash<std::decay_t<decltype(Hash()(std::declval<TKey>()))>>,
-        unsigned int HashRetries = 3ul>
-class HashTableWithRehashing
+        typename Hash = std::hash<TKey>>
+class FixedSizeHashTableOpenHashingWithAge
 {
-    struct Node;
+    struct Node
+    {
+        enum class Occupancy
+        {
+            free,
+            deleted,
+            occupied,
+        } occupancy_ = Occupancy::free;
+        unsigned long long age_ = 0u;
+        TKey key_;
+        TValue value_;
+    };
 public:
-    HashTableWithRehashing(const HashTableWithRehashing &) = delete;
-    HashTableWithRehashing &operator=(const HashTableWithRehashing &in) = delete;
+    HashTableOpenHashing(const HashTableWithRehashing &) = delete;
+    HashTableOpenHashing&operator=(const HashTableOpenHashing&in) = delete;
 
-    HashTableWithRehashing()
+    HashTableOpenHashing()
         :data_(1 << TBucketBitWidth)
     {
     }
 
-    TValue* operator[](const TKey key) noexcept
+    TValue* get(const TKey& key) const noexcept
     {
         auto hash = hashFunction_(key);
         auto bucket = hash & hashMask;
 
-        for (unsigned int i = 0ul; i < HashRetries + 1; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            if (not data_[bucket])
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::occupied && nodes_[bucket].key_ == key)
             {
-                data_[bucket] = {key, {}};
-                return &(data_[bucket]->val);
+                nodes_[bucket].age_ = ++age_;
+                return &nodes_[bucket].value;
             }
-            else if (data_[bucket]->key == key)
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::free)
             {
-                return &(data_[bucket]->val);
+                return nullptr;
             }
-
-            hash = rehashFunction_(hash);
-            bucket = hash & hashMask;
+            ++bucket;
         }
         return nullptr;
     }
 
-    TValue* get(const TKey key) const noexcept
+    void store(const TKey& key, const TValue& val)
     {
         auto hash = hashFunction_(key);
         auto bucket = hash & hashMask;
 
-        for (unsigned int i = 0ul; i < HashRetries + 1; ++i)
-        {
-            if (data_[bucket] && data_[bucket]->key == key)
-            {
-                return &(data_[bucket]->val);
-            }
+        auto oldestElem = nullptr;
+        auto oldestAge = 0u;
 
-            hash = rehashFunction_(hash);
-            bucket = hash & hashMask;
+        for (int i = 0; i < 3; ++i)
+        {
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::occupied && nodes_[bucket].key_ == key)
+            {
+                nodes_[bucket].value = val;
+                nodes_[bucket].age_ = ++age_;
+                return;
+            }
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::free)
+            {
+                create(nodes_[bucket], key, value);
+                return;
+            }
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::deleted)
+            {
+                oldestElem = &nodes_[bucket];
+                oldestAge = age_;
+                ++bucket;
+                continue;
+            }
+            if (nodes_[bucket].age_ > oldestAge)
+            {
+                oldestAge = nodes_[bucket].age_;
+                oldestElem = &nodes_[bucket];
+            }
+            ++bucket;
         }
-        return nullptr;
+        create(*oldestElem, key, value);
     }
 
-    void store(const TKey key, TValue val)
+    TValue* operator[](const TKey& key)
     {
         auto hash = hashFunction_(key);
         auto bucket = hash & hashMask;
 
-        for (unsigned int i = 0ul; i < HashRetries + 1; ++i)
-        {
-            if (not data_[bucket] || data_[bucket]->key == key)
-            {
-                data_[bucket] = {key, std::move(val)};
-            }
+        auto oldestElem = nullptr;
+        auto oldestAge = 0u;
 
-            hash = rehashFunction_(hash);
-            bucket = hash & hashMask;
+        for (int i = 0; i < 3; ++i)
+        {
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::occupied && nodes_[bucket].key_ == key)
+            {
+                return &nodes_[bucket].value;
+            }
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::free)
+            {
+                create(nodes_[bucket], key, value);
+                return &nodes_[bucket].value;
+            }
+            if (nodes_[bucket].occupancy_ == Node::Occupancy::deleted)
+            {
+                oldestElem = &nodes_[bucket];
+                oldestAge = age_;
+                ++bucket;
+                continue;
+            }
+            if (nodes_[bucket].age_ > oldestAge)
+            {
+                oldestAge = nodes_[bucket].age_;
+                oldestElem = &nodes_[bucket];
+            }
+            ++bucket;
         }
+        create(*oldestElem, key, value);
+        return oldestElem;
     }
 private:
-    struct Node
+    void create(Node& node, const TKey& key, const TValue& val)
     {
-        TKey key;
-        TValue val;
-    };
+        node.key = key;
+        node.value = val;
+        node.age_ = ++age_;
+        node.occupancy_ = Node::Occupancy::occupied;
+    }
 
     std::decay_t<decltype(Hash())> hashFunction_;
-    std::decay_t<decltype(Rehash())> rehashFunction_;
-    std::vector<std::optional<Node>> data_;
-    static constexpr uint64_t hashMask = (1 << TBucketBitWidth) - 1;
+    std::array<TValue, (20u << 1u) > nodes_;
+    unsigned long long age_ = 0u;
+    unsigned long long hashMask = (20u << 1u) - 1;
 };
 
 }  // namespace non_std::containers

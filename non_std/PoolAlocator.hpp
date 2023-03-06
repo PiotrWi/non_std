@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include <BitOperations/Intrincts.hpp>
+
 /*
 Some assumptions:
 1. Not thread safe.
@@ -44,7 +46,7 @@ public:
             {
                 if (current->allocationMask[i] != 0x0)
                 {
-                    unsigned char freeBit = __builtin_ffsll(current->allocationMask[i]) - 1;
+                    unsigned char freeBit = bit_operations::intrincs::findFirstSet(current->allocationMask[i]) - 1;
                     current->allocationMask[i] ^= (1ull <<freeBit);
 
                     auto freeField = i * 64 + freeBit;

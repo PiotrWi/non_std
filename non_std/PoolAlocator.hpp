@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include <BitOperations/Intrincts.hpp>
+#include <non_std/BitOperations/Intrincts.hpp>
 
 /*
 Some assumptions:

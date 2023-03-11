@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <cstdint>
-#include <PoolAlocator.hpp>
+#include <non_std/PoolAlocator.hpp>
+#include "Traits.hpp"
 
 namespace non_std::containers
 {
@@ -10,6 +11,10 @@ namespace non_std::containers
 template<typename TValue, typename TKey, unsigned char THashWidth>
 class HashMap
 {
+public:
+    constexpr static NeverOverwriteTag OverwriteCategory {};
+    using pointer = TValue*;
+private:
     struct Node
     {
         TKey key;

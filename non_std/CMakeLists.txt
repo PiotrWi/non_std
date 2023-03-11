@@ -4,8 +4,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR})
 
 add_library(non_std
-        containers/FibonacciHeap.h
-        StringAlgorithms/algorithm.hpp
-        StringAlgorithms/algorithm.cpp containers/HashMap.hpp)
+        StringAlgorithms/algorithm.cpp
+        containers/FixedSizeHashTableOpenHashingWithAge.hpp containers/Traits.hpp internal/Logger.hpp)
 
 

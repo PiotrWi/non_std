@@ -1,10 +1,10 @@
 #include "lockFreeQueuesTests.hpp"
 
 #include <iostream>
-#include "containers/threadSafe/Queue.hpp"
-#include "containers/threadSafe/lockFree/Queue.hpp"
-#include "containers/threadSafe/lockFree/Stack.hpp"
-#include "containers/threadSafe/lockFree/StackLT.hpp"
+#include "non_std/containers/threadSafe/Queue.hpp"
+#include "non_std/containers/threadSafe/lockFree/Queue.hpp"
+#include "non_std/containers/threadSafe/lockFree/Stack.hpp"
+#include "non_std/containers/threadSafe/lockFree/StackLT.hpp"
 
 #include <future>
 #include <thread>

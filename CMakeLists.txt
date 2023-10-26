@@ -16,8 +16,8 @@ set (NON_STD_TESTING ON)
 if(NON_STD_TESTING)
     add_executable(nonStdTest
             main.cpp
-            #tests/lockFreeQueuesTests.cpp // Temporary skiped due to atomic linker errors....
-            #tests/lockFreeQueuesTests.hpp
+	    #tests/lockFreeQueuesTests.cpp # Temporary skiped due to atomic linker errors....
+	    #tests/lockFreeQueuesTests.hpp
             tests/FixedSizeHashTableOpenHashingWIthAgeTests.hpp
             tests/FixedSizeHashTableOpenHashingWIthAgeTests.cpp)
     target_link_libraries(nonStdTest

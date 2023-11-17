@@ -83,7 +83,15 @@ public:
         availablePools_ = nullptr;
         fullyAllocatedPools_ = nullptr;
     }
+/*
+    void clearAll()
+    {
+        while (fullyAllocatedPools_ != nullptr)
+        {
 
+        }
+    }
+*/
     ~PoolAllocator()
     {
         deleteNext(availablePools_);

@@ -75,7 +75,7 @@ public:
 
         toBeRemoved->allocationMask[wordIndex] ^= (1ull << bit);
     }
-
+/*
     void clearAll()
     {
         deleteNext(availablePools_);
@@ -83,15 +83,24 @@ public:
         availablePools_ = nullptr;
         fullyAllocatedPools_ = nullptr;
     }
-/*
+*/
     void clearAll()
     {
         while (fullyAllocatedPools_ != nullptr)
         {
-
+            moveToAvaiable(fullyAllocatedPools_);
+        }
+        auto* it = availablePools_;
+        while (it != nullptr)
+        {
+            it->allocationMask[0] = 0xffffffffffffffffull;
+            it->allocationMask[1] = 0xffffffffffffffffull;
+            it->allocationMask[2] = 0xffffffffffffffffull;
+            it->allocationMask[3] = 0xffffffffffffffffull;
+            it = it->next;
         }
     }
-*/
+
     ~PoolAllocator()
     {
         deleteNext(availablePools_);
